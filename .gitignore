@@ -13,3 +13,5 @@ results/
 *.out
 *.pid
 *.gz
+
+.idea

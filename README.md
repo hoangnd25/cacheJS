@@ -12,7 +12,7 @@ Using Bower:
 
     bower install cacheJS
 
-Or grab the file [source](https://github.com/hoangnd25/cacheJS/dist/cacheJS.js) ([minified](https://github.com/hoangnd25/cacheJS/dist/cacheJS.min.js)).
+Or grab the file [source](https://raw.githubusercontent.com/hoangnd25/cacheJS/master/dist/cacheJS.js) ([minified](https://raw.githubusercontent.com/hoangnd25/cacheJS/master/dist/cacheJS.min.js)).
 
 ## Usage
 
@@ -37,6 +37,6 @@ For advanced usage, see the documentation.
 
 ## Documentation
 
-Start with [`docs/INDEX.md`](https://github.com/hoangnd25/cacheJS/docs/INDEX.md).
+Start with [`docs/INDEX.md`](https://github.com/hoangnd25/cacheJS/blob/master/docs/INDEX.md).
 
 MIT. See `LICENSE.txt` in this directory.
