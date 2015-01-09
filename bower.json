@@ -1,0 +1,12 @@
+{
+  "name": "cacheJS",
+  "version": "1.0.0",
+  "main": "dist/cacheJS.min.js",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test"
+  ],
+  "dependencies": {}
+}

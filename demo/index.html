@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>cacheJS demo</title>
+    <link rel="stylesheet" href="./assets/normalize.css" />
+    <link rel="stylesheet" href="./assets/main.css" />
+    <style>
+
+    </style>
+  </head>
+  <body>
+    <h1>cacheJS demo</h1>
+
+    <h3>Please see source code and console logs</h3>
+
+    <p>See the <a href="http://hoangnd25.github.io/cacheJS">project homepage</a>.
+    <p>Check out the <a href="https://github.com/hoangnd25/cacheJS">project repo</a>.
+
+    <script src="./../dist/cacheJS.js"></script>
+
+    <script>
+
+        console.log("Create new cache with key {blogId: 1,type: 'view'}");
+        var html = '<h1>Test blog</h1>';
+        cacheJS.set({
+            blogId: 1,
+            type: 'view'
+        },html);
+
+        console.log("Retrieve cache:")
+        console.log(
+            cacheJS.get({blogId: 1,type: 'view'})
+        );
+
+        console.log("Remove cache:")
+        cacheJS.removeByKey({blogId: 1,type: 'view'});
+        console.log(
+            cacheJS.get({blogId: 1,type: 'view'})
+        );
+
+        console.log("Add entries with {author:'hoangnd'} as context");
+        cacheJS.set({blogId: 2, type: 'view'},html, null, {author:'hoangnd'});
+        cacheJS.set({blogId: 3, type: 'view'},html, null, {author:'hoangnd'});
+
+        console.log("Delete entries with {author:'hoangnd'} as context");
+        cacheJS.removeByContext({author:'hoangnd'});
+        console.log(
+            cacheJS.get({blogId: 2,type: 'view'}),
+            cacheJS.get({blogId: 3,type: 'view'})
+        );
+      /* end demo script */
+    </script>
+  </body>
+</html>
