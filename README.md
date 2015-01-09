@@ -10,7 +10,7 @@ See the [project homepage](http://hoangnd25.github.io/cacheJS).
 ## Installation
 Using Bower:
 
-    bower install cacheJS
+    bower install cache-js
 
 Or grab the file [source](https://raw.githubusercontent.com/hoangnd25/cacheJS/master/dist/cacheJS.js) ([minified](https://raw.githubusercontent.com/hoangnd25/cacheJS/master/dist/cacheJS.min.js)).
 
