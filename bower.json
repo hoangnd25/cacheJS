@@ -1,12 +1,26 @@
 {
-  "name": "cacheJS",
-  "version": "1.0.0",
-  "main": "dist/cacheJS.min.js",
-  "ignore": [
-    "**/.*",
-    "node_modules",
-    "bower_components",
-    "test"
-  ],
-  "dependencies": {}
+    "name": "cacheJS",
+    "version": "1.0.0",
+    "authors": [
+        {
+            "name": "Hoang Nguyen",
+            "homepage": "http://hoangnd.me"
+        }
+    ],
+    "keywords": ["javascript","cache"],
+    "main": "dist/cacheJS.min.js",
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/hoangnd25/cacheJS.git"
+    },
+    "ignore": [
+        "**/.*",
+        "node_modules",
+        "bower_components",
+        "test"
+    ],
+    "dependencies": {
+
+    },
+    "license": "MIT"
 }
