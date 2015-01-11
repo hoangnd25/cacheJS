@@ -25,10 +25,36 @@ var Cache = function () {
         getProvider: function (name) {
             switch (name) {
             case 'localStorage':
-                return new LocalStorageProvider(this);
+               return localStorageProvider;
             case 'array':
-                return new ArrayProvider(this);
+                return arrayProvider;
             }
+        },
+        /**
+         * Accept keys as array e.g: {blogId:"2",action:"view"} and convert it to unique string
+         */
+        generateKey: function (object) {
+            var generatedKey = DEFAULT.prefix + '_',
+                keyArray = [];
+
+            for (var key in object){
+                if(object.hasOwnProperty(key))
+                {
+                    keyArray.push(key);
+                }
+            }
+
+            keyArray.sort();
+            for(var i=0; i<keyArray.length; i++){
+                generatedKey += keyArray[i] + '_' + object[keyArray[i]];
+                if(i !== (keyArray.length - 1)){
+                    generatedKey += '__';
+                }
+            }
+            return generatedKey;
+        },
+        generateContextKey: function(key,value){
+            return DEFAULT.prefix + '_context_' + key + '_' + value;
         },
         /**
          * Get current time (compared to Epoch time) in seconds
@@ -46,9 +72,25 @@ var Cache = function () {
     };
 
     /**
+     * Initiate providers as local variables
+     */
+    var localStorageProvider = new LocalStorageProvider(_this),
+        arrayProvider = new ArrayProvider(_this);
+
+    /**
      * Public functions
      */
     return {
+        /**
+         * @method Cache.use
+         * @description Switch provider. available providers are: 'localStorage','array'
+         *
+         * @param provider
+         */
+        use: function(provider) {
+            DEFAULT.provider = provider;
+            return this;
+        },
         /**
          * @method Cache.get
          * @description Get cache by array key
@@ -128,7 +170,7 @@ var Cache = function () {
 var LocalStorageProvider = function (cacheJS) {
     return{
         get: function(key){
-            var generatedKey = this.generateKey(key);
+            var generatedKey = cacheJS.generateKey(key);
             var object = localStorage.getItem(generatedKey);
 
             if(object !== null){
@@ -144,7 +186,7 @@ var LocalStorageProvider = function (cacheJS) {
         },
         set: function(key, value, ttl, contexts){
             ttl = ttl || cacheJS.getDefault().ttl;
-            var cacheKey = this.generateKey(key);
+            var cacheKey = cacheJS.generateKey(key);
             localStorage.setItem(cacheKey,
                 JSON.stringify({
                     data: value,
@@ -158,7 +200,7 @@ var LocalStorageProvider = function (cacheJS) {
                     continue;
                 }
                 // Generate context key
-                var contextKey = this.getContextKey(context,contexts[context]);
+                var contextKey = cacheJS.generateContextKey(context,contexts[context]);
                 var storedContext = localStorage.getItem(contextKey);
                 if(storedContext !== null){
                     storedContext = JSON.parse(storedContext);
@@ -181,15 +223,15 @@ var LocalStorageProvider = function (cacheJS) {
             }
         },
         removeByKey: function(key){
-            var cache = localStorage.getItem(this.generateKey(key));
+            var cache = localStorage.getItem(cacheJS.generateKey(key));
             if(cache !== null){
-                localStorage.removeItem(this.generateKey(key));
+                localStorage.removeItem(cacheJS.generateKey(key));
             }
         },
         removeByContext: function(context){
             for(var key in context){
                 if(context.hasOwnProperty(key)){
-                    var contextKey = this.getContextKey(key, context[key]);
+                    var contextKey = cacheJS.generateContextKey(key, context[key]);
                     var storedContext = localStorage.getItem(contextKey);
                     if(storedContext === null){
                         return;
@@ -201,50 +243,88 @@ var LocalStorageProvider = function (cacheJS) {
                     localStorage.removeItem(contextKey);
                 }
             }
-        },
-        getContextKey: function(key,value){
-            return cacheJS.getDefault().prefix + '_context_' + key + '_' + value;
-        },
-        /**
-         * Accept keys as array e.g: {blogId:"2",action:"view"} and convert it to unique string
-         */
-        generateKey: function (object) {
-            var generatedKey = cacheJS.getDefault().prefix + '_',
-                keyArray = [];
-
-            for (var key in object){
-                if(object.hasOwnProperty(key))
-                {
-                    keyArray.push(key);
-                }
-            }
-
-            keyArray.sort();
-            for(var i=0; i<keyArray.length; i++){
-                generatedKey += keyArray[i] + '_' + object[keyArray[i]];
-                if(i !== (keyArray.length - 1)){
-                    generatedKey += '__';
-                }
-            }
-            return generatedKey;
         }
     };
 };
 
 
-var ArrayProvider = function () {};
-//var ArrayProvider = function(cacheJS){
-//    return{
-//        get: function(key){
-//        },
-//        set: function(key, value, ttl){
-//        },
-//        removeByKey: function(key){
-//        },
-//        removeByContext: function(context){
-//        }
-//    };
-//};
+var ArrayProvider = function(cacheJS){
+    var cacheArray = {},
+        cacheContexts = {};
+
+    return{
+        get: function(key){
+            var generatedKey = cacheJS.generateKey(key);
+            if(cacheArray.hasOwnProperty(generatedKey)){
+                var object = cacheArray[generatedKey];
+                // Check if the cache is expired
+                if((cacheJS.getCurrentTime() - object.createdAt) >= object.ttl){
+                    delete cacheArray[generatedKey];
+                    return null;
+                }
+                return object.data;
+            }else{
+                return null;
+            }
+        },
+        set: function(key, value, ttl, contexts){
+            var generatedKey = cacheJS.generateKey(key);
+            ttl = ttl === null ? cacheJS.getDefault().ttl : ttl;
+            cacheArray[generatedKey] = {
+                data: value,
+                ttl: ttl,
+                createdAt: cacheJS.getCurrentTime()
+            };
+
+            for(var context in contexts){
+                if(!contexts.hasOwnProperty(context)){
+                    continue;
+                }
+                // Generate context key
+                var contextKey = cacheJS.generateContextKey(context,contexts[context]);
+                var storedContext = cacheContexts.hasOwnProperty(contextKey) ? cacheContexts[contextKey] : null;
+                if(storedContext !== null){
+                    var alreadyExist = false;
+                    // Check if cache id already exist in saved context
+                    // Use this loop as Array.indexOf not available IE8 end below
+                    for(var i = 0; i < storedContext.length; i++){
+                        if(storedContext[i] == generatedKey){
+                            alreadyExist = true;
+                            break;
+                        }
+                    }
+                    if(!alreadyExist){
+                        storedContext.push(generatedKey);
+                    }
+                }else{
+                    storedContext = [generatedKey];
+                }
+                cacheContexts[contextKey] = storedContext;
+            }
+        },
+        removeByKey: function(key){
+            var generatedKey = cacheJS.generateKey(key);
+            if(cacheArray.hasOwnProperty(generatedKey)){
+                delete cacheArray[generatedKey];
+            }
+        },
+        removeByContext: function(context){
+            for(var key in context){
+                if(context.hasOwnProperty(key)){
+                    var contextKey = cacheJS.generateContextKey(key, context[key]);
+                    var storedContext = cacheContexts.hasOwnProperty(contextKey) ? cacheContexts[contextKey] : null;
+                    if(storedContext === null){
+                        return;
+                    }
+                    for(var i = 0; i < storedContext.length; i++){
+                        delete cacheArray[storedContext[i]];
+                    }
+                    delete cacheContexts[contextKey];
+                }
+            }
+        }
+    };
+};
 
 
 // Version.

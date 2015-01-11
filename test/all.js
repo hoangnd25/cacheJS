@@ -1,3 +1,5 @@
+//cacheJS.use('array');
+
 test("the base function exists", function() {
   ok(cacheJS);
 });

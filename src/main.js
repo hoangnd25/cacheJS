@@ -19,10 +19,36 @@ var Cache = function () {
         getProvider: function (name) {
             switch (name) {
             case 'localStorage':
-                return new LocalStorageProvider(this);
+               return localStorageProvider;
             case 'array':
-                return new ArrayProvider(this);
+                return arrayProvider;
             }
+        },
+        /**
+         * Accept keys as array e.g: {blogId:"2",action:"view"} and convert it to unique string
+         */
+        generateKey: function (object) {
+            var generatedKey = DEFAULT.prefix + '_',
+                keyArray = [];
+
+            for (var key in object){
+                if(object.hasOwnProperty(key))
+                {
+                    keyArray.push(key);
+                }
+            }
+
+            keyArray.sort();
+            for(var i=0; i<keyArray.length; i++){
+                generatedKey += keyArray[i] + '_' + object[keyArray[i]];
+                if(i !== (keyArray.length - 1)){
+                    generatedKey += '__';
+                }
+            }
+            return generatedKey;
+        },
+        generateContextKey: function(key,value){
+            return DEFAULT.prefix + '_context_' + key + '_' + value;
         },
         /**
          * Get current time (compared to Epoch time) in seconds
@@ -40,9 +66,25 @@ var Cache = function () {
     };
 
     /**
+     * Initiate providers as local variables
+     */
+    var localStorageProvider = new LocalStorageProvider(_this),
+        arrayProvider = new ArrayProvider(_this);
+
+    /**
      * Public functions
      */
     return {
+        /**
+         * @method Cache.use
+         * @description Switch provider. available providers are: 'localStorage','array'
+         *
+         * @param provider
+         */
+        use: function(provider) {
+            DEFAULT.provider = provider;
+            return this;
+        },
         /**
          * @method Cache.get
          * @description Get cache by array key

@@ -24,3 +24,9 @@
 ##### cacheJS.removeByContext(context) 
 
 `key`: an array(object).
+
+
+##### cacheJS.use(provider) 
+Switch cache provider (localStorage is the default provider)
+
+`provider`: provider name ('localStorage','array').

@@ -3,7 +3,7 @@
 Small JS lib for caching:
 * Use array as key for storing cache instead of string ( {blogId:1,type:'view'} )
 * Clear cache using context (clear blog posts of an author)
-* Support localStorage, array, cookies (WIP, only localStorage is available at the moment)
+* Support localStorage, array, cookies (WIP, only localStorage and array are available at the moment)
 
 See the [project homepage](http://hoangnd25.github.io/cacheJS).
 
@@ -32,6 +32,11 @@ Flush cache
     cacheJS.removeByKey({blogId: 2,type: 'view'});
     
     cacheJS.removeByContext({author:'hoangnd'});
+        
+Switch provider
+
+    cacheJS.use('array');
+    cacheJS.use('array').set({blogId:1},'<h1>Blog 1</h1>')};
     
 For advanced usage, see the documentation.
 
