@@ -45,3 +45,5 @@ For advanced usage, see the documentation.
 Start with [`docs/INDEX.md`](https://github.com/hoangnd25/cacheJS/blob/master/docs/INDEX.md).
 
 MIT. See `LICENSE.txt` in this directory.
+
+Inspired by https://github.com/sonata-project/cache
