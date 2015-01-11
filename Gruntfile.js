@@ -12,6 +12,8 @@ module.exports = function(grunt) {
         src: [
           'src/_intro.js',
           'src/main.js',
+          'src/localStorageProvider.js',
+          'src/arrayProvider.js',
           'src/_outro.js'
         ],
         dest: 'dist/<%= pkg.name.replace(".js", "") %>.js'
