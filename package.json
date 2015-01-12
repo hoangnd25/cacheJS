@@ -1,6 +1,6 @@
 {
   "name": "cacheJS",
-  "version": "0.0.0",
+  "version": "1.1.0",
   "main": "dist/cacheJS.min.js",
   "description": "Javascript lib that allows store cache using array as key and remove cache by context",
   "repository": {

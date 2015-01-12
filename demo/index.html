@@ -48,7 +48,28 @@
             cacheJS.get({blogId: 2,type: 'view'}),
             cacheJS.get({blogId: 3,type: 'view'})
         );
-      /* end demo script */
+        cacheJS.use('array');
+
+        console.log('Subscribe to cacheAdded event');
+        var listener = function(objectAdded){
+            console.log(objectAdded)
+        };
+        cacheJS.on('cacheAdded', listener);
+        cacheJS.set({blogId: 4, type: 'view'},'this is blog number 4');
+        cacheJS.set({blogId: 5, type: 'view'},'this is blog number 5', null, {author:'hoangnd'});
+        cacheJS.set({blogId: 6, type: 'view'},'this is blog number 6', null, {author:'hoangnd'});
+
+        console.log('Subscribe to cacheRemoved event');
+        cacheJS.on('cacheRemoved',function(objectRemoved){
+            console.log(objectRemoved)
+        });
+        cacheJS.removeByKey({blogId: 4, type: 'view'});
+        cacheJS.removeByContext({author:'hoangnd'});
+
+        console.log('Un-Subscribe to cacheAdded event');
+        cacheJS.unsubscribe('cacheAdded', listener);
+        cacheJS.set({blogId: 7, type: 'view'},'this is blog number 7');
+
     </script>
   </body>
 </html>

@@ -19,7 +19,7 @@ var ArrayProvider = function(cacheJS){
         },
         set: function(key, value, ttl, contexts){
             var generatedKey = cacheJS.generateKey(key);
-            ttl = ttl === null ? cacheJS.getDefault().ttl : ttl;
+            ttl = ttl === null || typeof(ttl) === 'undefined' ? cacheJS.getDefault().ttl : ttl;
             cacheArray[generatedKey] = {
                 data: value,
                 ttl: ttl,
@@ -51,11 +51,29 @@ var ArrayProvider = function(cacheJS){
                 }
                 cacheContexts[contextKey] = storedContext;
             }
+
+            cacheJS.dispatchEvent('cacheAdded',
+                {
+                    key: key,
+                    value: value,
+                    ttl: ttl,
+                    contexts: contexts || null
+                }
+            );
         },
         removeByKey: function(key){
             var generatedKey = cacheJS.generateKey(key);
             if(cacheArray.hasOwnProperty(generatedKey)){
+                var cache = cacheArray[generatedKey];
                 delete cacheArray[generatedKey];
+
+                cacheJS.dispatchEvent('cacheRemoved',
+                    {
+                        generatedKey: generatedKey,
+                        value: cache.data,
+                        ttl: cache.ttl
+                    }
+                );
             }
         },
         removeByContext: function(context){
@@ -67,7 +85,16 @@ var ArrayProvider = function(cacheJS){
                         return;
                     }
                     for(var i = 0; i < storedContext.length; i++){
+                        var cache = cacheArray[storedContext[i]];
                         delete cacheArray[storedContext[i]];
+
+                        cacheJS.dispatchEvent('cacheRemoved',
+                            {
+                                generatedKey: storedContext[i],
+                                value: cache.data,
+                                ttl: cache.ttl
+                            }
+                        );
                     }
                     delete cacheContexts[contextKey];
                 }

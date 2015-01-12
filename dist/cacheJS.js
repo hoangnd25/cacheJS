@@ -17,6 +17,11 @@ var Cache = function () {
         provider: 'localStorage'
     };
 
+    var eventSubscribers  = {
+        cacheAdded: [],
+        cacheRemoved: []
+    };
+
     /**
      * Group all functions that are shared across all providers
      */
@@ -68,6 +73,31 @@ var Cache = function () {
          */
         getDefault: function(){
             return DEFAULT;
+        },
+        /**
+         * Return subscribers
+         *
+         * @returns {{cacheAdded: Array, cacheRemoved: Array}}
+         */
+        getEventSubscribers: function(){
+            return eventSubscribers;
+        },
+        /**
+         * Dispatch event to subscribers
+         *
+         * @param event Event name
+         * @param object Object will be sent to subscriber
+         */
+        dispatchEvent: function(event, object){
+            var callbacks = eventSubscribers[event];
+            if(callbacks.length < 1){
+                return;
+            }
+            for(var index = 0; index < callbacks.length; index++){
+                if(typeof(callbacks[index]) !== 'undefined'){
+                    callbacks[index](object);
+                }
+            }
         }
     };
 
@@ -156,6 +186,32 @@ var Cache = function () {
         removeByContext: function(context){
             _this.getProvider(DEFAULT.provider).removeByContext(context);
             return this;
+        },
+        /**
+         * @method Cache.on
+         * @description Subscribe to an event
+         *
+         * @param event
+         * @param callback
+         */
+        on: function(event, callback){
+            eventSubscribers[event].push(callback);
+        },
+        /**
+         * @method Cache.unsubscribe
+         * @description Unsubscribe to an event
+         *
+         * @param event
+         * @param callback
+         */
+        unsubscribe: function(event, callback){
+            var callbacks = eventSubscribers[event];
+            for(var i = 0; i < callbacks.length; i++){
+                if(callbacks[i] === callback){
+                    delete callbacks[i];
+                    break;
+                }
+            }
         }
 
     };
@@ -221,11 +277,29 @@ var LocalStorageProvider = function (cacheJS) {
                 }
                 localStorage.setItem(contextKey,JSON.stringify(storedContext));
             }
+
+            cacheJS.dispatchEvent('cacheAdded',
+                {
+                    key: key,
+                    value: value,
+                    ttl: ttl,
+                    contexts: contexts || null
+                }
+            );
         },
         removeByKey: function(key){
-            var cache = localStorage.getItem(cacheJS.generateKey(key));
+            var generatedKey = cacheJS.generateKey(key);
+            var cache = localStorage.getItem(generatedKey);
             if(cache !== null){
-                localStorage.removeItem(cacheJS.generateKey(key));
+                cache = JSON.parse(cache);
+                localStorage.removeItem(generatedKey);
+                cacheJS.dispatchEvent('cacheRemoved',
+                    {
+                        generatedKey: generatedKey,
+                        value: cache.data,
+                        ttl: cache.ttl
+                    }
+                );
             }
         },
         removeByContext: function(context){
@@ -238,7 +312,15 @@ var LocalStorageProvider = function (cacheJS) {
                     }
                     var cacheIds = JSON.parse(storedContext);
                     for(var i = 0; i < cacheIds.length; i++){
+                        var cache = JSON.parse(localStorage.getItem(cacheIds[i]));
                         localStorage.removeItem(cacheIds[i]);
+                        cacheJS.dispatchEvent('cacheRemoved',
+                            {
+                                generatedKey: cacheIds[i],
+                                value: cache.data,
+                                ttl: cache.ttl
+                            }
+                        );
                     }
                     localStorage.removeItem(contextKey);
                 }
@@ -269,7 +351,7 @@ var ArrayProvider = function(cacheJS){
         },
         set: function(key, value, ttl, contexts){
             var generatedKey = cacheJS.generateKey(key);
-            ttl = ttl === null ? cacheJS.getDefault().ttl : ttl;
+            ttl = ttl === null || typeof(ttl) === 'undefined' ? cacheJS.getDefault().ttl : ttl;
             cacheArray[generatedKey] = {
                 data: value,
                 ttl: ttl,
@@ -301,11 +383,29 @@ var ArrayProvider = function(cacheJS){
                 }
                 cacheContexts[contextKey] = storedContext;
             }
+
+            cacheJS.dispatchEvent('cacheAdded',
+                {
+                    key: key,
+                    value: value,
+                    ttl: ttl,
+                    contexts: contexts || null
+                }
+            );
         },
         removeByKey: function(key){
             var generatedKey = cacheJS.generateKey(key);
             if(cacheArray.hasOwnProperty(generatedKey)){
+                var cache = cacheArray[generatedKey];
                 delete cacheArray[generatedKey];
+
+                cacheJS.dispatchEvent('cacheRemoved',
+                    {
+                        generatedKey: generatedKey,
+                        value: cache.data,
+                        ttl: cache.ttl
+                    }
+                );
             }
         },
         removeByContext: function(context){
@@ -317,7 +417,16 @@ var ArrayProvider = function(cacheJS){
                         return;
                     }
                     for(var i = 0; i < storedContext.length; i++){
+                        var cache = cacheArray[storedContext[i]];
                         delete cacheArray[storedContext[i]];
+
+                        cacheJS.dispatchEvent('cacheRemoved',
+                            {
+                                generatedKey: storedContext[i],
+                                value: cache.data,
+                                ttl: cache.ttl
+                            }
+                        );
                     }
                     delete cacheContexts[contextKey];
                 }
@@ -328,7 +437,7 @@ var ArrayProvider = function(cacheJS){
 
 
 // Version.
-Cache.VERSION = '1.0.0';
+Cache.VERSION = '1.1.0';
 
 // Export to the root, which is probably `window`.
 root.cacheJS = new Cache();

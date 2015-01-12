@@ -11,6 +11,11 @@ var Cache = function () {
         provider: 'localStorage'
     };
 
+    var eventSubscribers  = {
+        cacheAdded: [],
+        cacheRemoved: []
+    };
+
     /**
      * Group all functions that are shared across all providers
      */
@@ -62,6 +67,31 @@ var Cache = function () {
          */
         getDefault: function(){
             return DEFAULT;
+        },
+        /**
+         * Return subscribers
+         *
+         * @returns {{cacheAdded: Array, cacheRemoved: Array}}
+         */
+        getEventSubscribers: function(){
+            return eventSubscribers;
+        },
+        /**
+         * Dispatch event to subscribers
+         *
+         * @param event Event name
+         * @param object Object will be sent to subscriber
+         */
+        dispatchEvent: function(event, object){
+            var callbacks = eventSubscribers[event];
+            if(callbacks.length < 1){
+                return;
+            }
+            for(var index = 0; index < callbacks.length; index++){
+                if(typeof(callbacks[index]) !== 'undefined'){
+                    callbacks[index](object);
+                }
+            }
         }
     };
 
@@ -150,6 +180,32 @@ var Cache = function () {
         removeByContext: function(context){
             _this.getProvider(DEFAULT.provider).removeByContext(context);
             return this;
+        },
+        /**
+         * @method Cache.on
+         * @description Subscribe to an event
+         *
+         * @param event
+         * @param callback
+         */
+        on: function(event, callback){
+            eventSubscribers[event].push(callback);
+        },
+        /**
+         * @method Cache.unsubscribe
+         * @description Unsubscribe to an event
+         *
+         * @param event
+         * @param callback
+         */
+        unsubscribe: function(event, callback){
+            var callbacks = eventSubscribers[event];
+            for(var i = 0; i < callbacks.length; i++){
+                if(callbacks[i] === callback){
+                    delete callbacks[i];
+                    break;
+                }
+            }
         }
 
     };

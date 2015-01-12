@@ -52,11 +52,29 @@ var LocalStorageProvider = function (cacheJS) {
                 }
                 localStorage.setItem(contextKey,JSON.stringify(storedContext));
             }
+
+            cacheJS.dispatchEvent('cacheAdded',
+                {
+                    key: key,
+                    value: value,
+                    ttl: ttl,
+                    contexts: contexts || null
+                }
+            );
         },
         removeByKey: function(key){
-            var cache = localStorage.getItem(cacheJS.generateKey(key));
+            var generatedKey = cacheJS.generateKey(key);
+            var cache = localStorage.getItem(generatedKey);
             if(cache !== null){
-                localStorage.removeItem(cacheJS.generateKey(key));
+                cache = JSON.parse(cache);
+                localStorage.removeItem(generatedKey);
+                cacheJS.dispatchEvent('cacheRemoved',
+                    {
+                        generatedKey: generatedKey,
+                        value: cache.data,
+                        ttl: cache.ttl
+                    }
+                );
             }
         },
         removeByContext: function(context){
@@ -69,7 +87,15 @@ var LocalStorageProvider = function (cacheJS) {
                     }
                     var cacheIds = JSON.parse(storedContext);
                     for(var i = 0; i < cacheIds.length; i++){
+                        var cache = JSON.parse(localStorage.getItem(cacheIds[i]));
                         localStorage.removeItem(cacheIds[i]);
+                        cacheJS.dispatchEvent('cacheRemoved',
+                            {
+                                generatedKey: cacheIds[i],
+                                value: cache.data,
+                                ttl: cache.ttl
+                            }
+                        );
                     }
                     localStorage.removeItem(contextKey);
                 }

@@ -64,3 +64,43 @@ test("Remove by context", function() {
         cacheJS.get({blogId: 4, type: 'view'}) === null
     );
 });
+
+/**
+ * Start event testing
+ */
+
+var listener = function(){
+    ok(true);
+    start();
+};
+
+test("Subscribe to cacheAdded", function() {
+    cacheJS.on('cacheAdded', listener);
+    stop();
+    cacheJS.set({blogId: 4, type: 'view'},'blog 4');
+});
+
+test("Subscribe to cacheRemoved - Remove By Key", function() {
+    cacheJS.on('cacheRemoved', listener);
+    stop();
+    cacheJS.removeByKey({blogId: 4, type: 'view'});
+});
+
+test("Unsubscribe to cacheAdded", function() {
+    cacheJS.unsubscribe('cacheAdded', listener);
+    // If unsubscribe process is failed. The following statement will cause qunit to fail because func start() run twice
+    cacheJS.set({blogId: 5, type: 'view'},'blog 5', null, {author: 'hoangnd'});
+    ok(true);
+});
+
+test("Subscribe to cacheRemoved - Remove By Context", function() {
+    stop();
+    cacheJS.removeByContext({author: 'hoangnd'});
+});
+
+test("Unsubscribe to cacheRemoved", function() {
+    cacheJS.unsubscribe('cacheRemoved', listener);
+    // If unsubscribe process is failed. The following statement will cause qunit to fail because func start() run twice
+    cacheJS.removeByKey({});
+    ok(true);
+});
