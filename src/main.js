@@ -88,10 +88,19 @@ var Cache = function () {
                 return;
             }
             for(var index = 0; index < callbacks.length; index++){
-                if(typeof(callbacks[index]) !== 'undefined'){
+                if(typeof(callbacks[index]) !== 'undefined' && _this.isFunction(callbacks[index])){
                     callbacks[index](object);
                 }
             }
+        },
+        /**
+         * Check if x is a function
+         *
+         * @param x
+         * @returns {boolean}
+         */
+        isFunction: function(x){
+        return Object.prototype.toString.call(x) == '[object Function]';
         }
     };
 
