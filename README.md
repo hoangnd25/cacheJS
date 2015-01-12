@@ -16,28 +16,52 @@ Or grab the file [source](https://raw.githubusercontent.com/hoangnd25/cacheJS/ma
 
 ## Usage
 
-Save cache:
+**Save cache**:  
+cacheJS.set(`key`,`value`,`ttl`,`context`)
 
     cacheJS.set({blogId:1,type:'view},'<h1>Blog 1</h1>');
     cacheJS.set({blogId:2,type:'view},'<h1>Blog 2</h1>', null, {author:'hoangnd'});
     cacheJS.set({blogId:3,type:'view},'<h1>Blog 3</h1>', 3600, {author:'hoangnd',categoryId:2});
     
-Retrieve cache:
+**Retrieve cache**:   
+cacheJS.get(`key`)
     
     cacheJS.get({blogId: 1,type: 'view'});
     
-Flush cache
+**Flush cache**  
+cacheJS.removeByKey(`key`)  
+cacheJS.removeByContext(`context`) 
 
     cacheJS.removeByKey({blogId: 1,type: 'view'});
     cacheJS.removeByKey({blogId: 2,type: 'view'});
     
     cacheJS.removeByContext({author:'hoangnd'});
         
-Switch provider
+**Switch provider**  
+cacheJS.use(`providerName`)
 
     cacheJS.use('array');
     cacheJS.use('array').set({blogId:1},'<h1>Blog 1</h1>')};
+
+**Event listener**  
+cacheJS.on(`event`,`callback`)  
+cacheJS.unsubscribe(`event`,`callback`)  
+
+    var listener = function(objectAdded){
+        // do something
+    };
+    cacheJS.on('cacheAdded', listener);
     
+    cacheJS.on('cacheRemoved', function(){
+        // do something
+    });
+    
+    cacheJS.unsubscribe('cacheAdded', listener);
+
+Supported events:
+* cacheAdded
+* cacheRemoved
+
 For advanced usage, see the documentation.
 
 ## Documentation
