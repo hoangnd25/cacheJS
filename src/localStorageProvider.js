@@ -37,13 +37,18 @@ var LocalStorageProvider = function (cacheJS) {
                     storedContext = JSON.parse(storedContext);
                     var alreadyExist = false;
                     // Check if cache id already exist in saved context
-                    // Use this loop as Array.indexOf not available IE8 end below
-                    for(var i = 0; i < storedContext.length; i++){
-                        if(storedContext[i] == cacheKey){
-                            alreadyExist = true;
-                            break;
+                    // Use native function if the browser is supported
+                    if(Array.prototype.indexOf){
+                        alreadyExist = (storedContext.indexOf(cacheKey) >= 0);
+                    }else{
+                        for(var i = 0; i < storedContext.length; i++){
+                            if(storedContext[i] == cacheKey){
+                                alreadyExist = true;
+                                break;
+                            }
                         }
                     }
+
                     if(!alreadyExist){
                         storedContext.push(cacheKey);
                     }

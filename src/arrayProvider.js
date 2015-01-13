@@ -36,13 +36,18 @@ var ArrayProvider = function(cacheJS){
                 if(storedContext !== null){
                     var alreadyExist = false;
                     // Check if cache id already exist in saved context
-                    // Use this loop as Array.indexOf not available IE8 end below
-                    for(var i = 0; i < storedContext.length; i++){
-                        if(storedContext[i] == generatedKey){
-                            alreadyExist = true;
-                            break;
+                    // Use native function if the browser is supported
+                    if(Array.prototype.indexOf){
+                        alreadyExist = (storedContext.indexOf(generatedKey) >= 0);
+                    }else{
+                        for(var i = 0; i < storedContext.length; i++){
+                            if(storedContext[i] == generatedKey){
+                                alreadyExist = true;
+                                break;
+                            }
                         }
                     }
+
                     if(!alreadyExist){
                         storedContext.push(generatedKey);
                     }
