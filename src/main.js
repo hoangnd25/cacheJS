@@ -100,7 +100,7 @@ var Cache = function () {
          * @returns {boolean}
          */
         isFunction: function(x){
-        return Object.prototype.toString.call(x) == '[object Function]';
+            return Object.prototype.toString.call(x) == '[object Function]';
         }
     };
 
