@@ -4,6 +4,36 @@
   "use strict";
 
 
+var ProviderManager = function() {
+
+    var DEFAULT = 'localStorage';
+
+    return {
+
+        init: function(cache) {
+            this.localStorageProvider = new LocalStorageProvider(cache);
+            this.arrayProvider = new ArrayProvider(cache);
+        },
+
+        use: function(provider) {
+            DEFAULT = provider;
+        },
+
+        getProvider: function (name) {
+
+            var providerName = name || DEFAULT;
+
+            switch (providerName) {
+                case 'localStorage':
+                    return this.localStorageProvider;
+                case 'array':
+                    return this.arrayProvider;
+            }
+        }
+    };
+};
+
+
 /**
  * @namespace
  */
@@ -13,8 +43,7 @@ var Cache = function () {
      */
     var DEFAULT = {
         prefix: '_cache',
-        ttl: 604800,
-        provider: 'localStorage'
+        ttl: 604800
     };
 
     var eventSubscribers  = {
@@ -27,14 +56,6 @@ var Cache = function () {
      */
     var _this = {
 
-        getProvider: function (name) {
-            switch (name) {
-            case 'localStorage':
-               return localStorageProvider;
-            case 'array':
-                return arrayProvider;
-            }
-        },
         /**
          * Accept keys as array e.g: {blogId:"2",action:"view"} and convert it to unique string
          */
@@ -110,11 +131,8 @@ var Cache = function () {
         }
     };
 
-    /**
-     * Initiate providers as local variables
-     */
-    var localStorageProvider = new LocalStorageProvider(_this),
-        arrayProvider = new ArrayProvider(_this);
+    var providerManager = new ProviderManager();
+    providerManager.init(_this);
 
     /**
      * Public functions
@@ -127,7 +145,7 @@ var Cache = function () {
          * @param provider
          */
         use: function(provider) {
-            DEFAULT.provider = provider;
+            providerManager.use(provider);
             return this;
         },
         /**
@@ -140,7 +158,7 @@ var Cache = function () {
          * Cache.get({blogId:"2",action:"view"});
          */
         get: function(key){
-            return _this.getProvider(DEFAULT.provider).get(key);
+            return providerManager.getProvider().get(key);
         },
         /**
          * @method Cache.set
@@ -153,7 +171,7 @@ var Cache = function () {
          * @returns {Cache}
          */
         set: function(key, value, ttl, contexts){
-            _this.getProvider(DEFAULT.provider).set(key, value, ttl, contexts);
+            providerManager.getProvider().set(key, value, ttl, contexts);
             return this;
         },
         /**
@@ -183,7 +201,7 @@ var Cache = function () {
          * @returns {Cache}
          */
         removeByKey: function(key){
-            _this.getProvider(DEFAULT.provider).removeByKey(key);
+            providerManager.getProvider().removeByKey(key);
             return this;
         },
         /**
@@ -193,7 +211,7 @@ var Cache = function () {
          * @returns {Cache}
          */
         removeByContext: function(context){
-            _this.getProvider(DEFAULT.provider).removeByContext(context);
+            providerManager.getProvider().removeByContext(context);
             return this;
         },
         /**

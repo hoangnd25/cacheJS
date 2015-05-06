@@ -1,4 +1,4 @@
-['array', 'localStorage'].forEach(function(provider) {
+window.providers.forEach(function(provider) {
 
     test("the base function exists", function() {
         ok(cacheJS);
