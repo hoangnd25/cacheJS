@@ -1,0 +1,1 @@
+window.providers = ['array'];
