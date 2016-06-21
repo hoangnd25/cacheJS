@@ -43,6 +43,34 @@ window.providers.forEach(function(provider) {
         }, 1200);
     });
 
+    test("Local storage quota limit", function() {
+
+        cacheJS.removeByContext({quota_test: 1});
+
+        for (var i = 0; i < 1000; i++){
+
+            // creating long strings to fill memory instead of many short strings to avoid crashing browser
+            var longString = '';
+            for (var j = 0; j < 1000; j++)
+                longString += j;
+
+            var result = cacheJS.set({
+                quota_test: i,
+                type: 'test'
+            },longString, null, {
+                quota_test: 1
+            });
+
+            if (result == null)
+                break;
+        }
+
+        // remove all test items
+        cacheJS.removeByContext({quota_test: 1});
+
+        ok(true);
+    });
+    
     test("Remove by context", function() {
         cacheJS.use(provider).set({
             blogId: 3,

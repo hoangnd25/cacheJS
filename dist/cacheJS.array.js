@@ -164,7 +164,11 @@ var Cache = function () {
          * @returns {Cache}
          */
         set: function(key, value, ttl, contexts){
-            providerManager.getProvider().set(key, value, ttl, contexts);
+            try{
+                providerManager.getProvider().set(key, value, ttl, contexts);
+            }catch (exception){
+                return null;
+            }
             return this;
         },
         /**
